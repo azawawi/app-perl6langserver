@@ -4,7 +4,7 @@
 - Fix `00-compile.t` copy & paste errors.
 - Remove dead debugging code.
 - Add Travis / AppVeyor CI.
-- Fix Travis / AppVeyor CI badges.
+- Fix Travis / AppVeyor CI badges in README.
 
 ## 0.0.1 - First release
 - Refactor out this project from [`IDE-Perl6`](
