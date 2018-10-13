@@ -23,9 +23,5 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" == "osx"   ]; then brew update              ; fi
   - if [ "$TRAVIS_OS_NAME" == "osx"   ]; then brew install rakudo-star ; fi
 
-before_install:
-    # Display OS name
-  - echo $TRAVIS_OS_NAME
-
 install:
   - zef install . && zef test . --verbose
