@@ -1,6 +1,6 @@
 # App::Perl6LangServer
 
- [![Build Status](https://travis-ci.org/azawawi/perl6-perl6langserver.svg?branch=master)](https://travis-ci.org/azawawi/perl6-perl6langserver) [![Build status](https://ci.appveyor.com/api/projects/status/github/azawawi/perl6-perl6langserver?svg=true)](https://ci.appveyor.com/project/azawawi/perl6-perl6langserver/branch/master)
+ [![Build Status](https://travis-ci.org/azawawi/app-perl6langserver.svg?branch=master)](https://travis-ci.org/azawawi/app-perl6langserver) [![Build status](https://ci.appveyor.com/api/projects/status/github/azawawi/app-perl6langserver?svg=true)](https://ci.appveyor.com/project/azawawi/app-perl6langserver/branch/master)
 
 This is usually used with a language client (e.g.
 [ide-perl6](https://github.com/azawawi/ide-perl6)). This language server
