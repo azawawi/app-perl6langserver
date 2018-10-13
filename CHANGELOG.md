@@ -1,5 +1,8 @@
 # Changelog for App::Perl6LangServer
 
+## 0.0.3 ** UNRELEASED **
+- Fix Travis CI on macOS by installing rakudo-star.
+
 ## 0.0.2
 - Fix `00-compile.t` copy & paste errors.
 - Remove dead debugging code.
