@@ -32,7 +32,6 @@ method run {
       }
       %headers{$name} = $value;
     }
-    # debug-log("Headers found: {%headers.perl}");
 
     # Read JSON::RPC request
     my $content-length = 0 + %headers<Content-Length>;
@@ -41,7 +40,6 @@ method run {
         my $request = from-json($json);
         my $id      = $request<id>;
         my $method  = $request<method>;
-        # debug-log("\c[BELL]: {$request.perl}");
 
         #TODO throw an exception if a method is called before $initialized = True
         given $method {
@@ -51,7 +49,6 @@ method run {
           }
           when 'initialized' {
             # Initialization done
-            # debug-log("🙂: Initialized handshake!");
             $initialized = True;
           }
           when 'textDocument/didOpen' {
@@ -68,7 +65,6 @@ method run {
           }
           when 'shutdown' {
             # Client requested to shutdown...
-            # debug-log("\c[Bell]: shutdown called, cya 👋");
             send-json-response($id, Any);
           }
           when 'exit' {
@@ -94,7 +90,6 @@ sub send-json-response($id, $result) {
   my $content-length = $json-response.chars;
   my $response = "Content-Length: $content-length\r\n\r\n$json-response";
   print($response);
-  # debug-log("\c[BELL]: {$response.perl}");
 }
 
 sub send-json-request($method, %params) {
@@ -107,11 +102,9 @@ sub send-json-request($method, %params) {
   my $content-length = $json-request.chars;
   my $request = "Content-Length: $content-length\r\n\r\n$json-request";
   print($request);
-  # debug-log("\c[BELL]: {$request}");
 }
 
 sub initialize(%params) {
-  # debug-log("\c[Bell]: initialize({%params.perl})");
   %(
     capabilities => {
       # TextDocumentSyncKind.Full
@@ -122,7 +115,6 @@ sub initialize(%params) {
 }
 
 sub text-document-did-open(%params) {
-  # debug-log("\c[Bell]: text-document-did-open");
   my %text-document = %params<textDocument>;
   %text-documents{%text-document<uri>} = %text-document;
 
@@ -130,8 +122,6 @@ sub text-document-did-open(%params) {
 }
 
 sub publish-diagnostics($uri) {
-  # debug-log("publish-diagnostics($uri)");
-
   # Create a temporary file for Perl 6 source code buffer
 	my ($file-name,$file-handle) = tempfile(:!unlink);
 
@@ -180,16 +170,12 @@ sub publish-diagnostics($uri) {
 
 
 sub text-document-did-save(%params) {
-  # debug-log("\c[Bell]: text-document-did-save");
-
   my %text-document = %params<textDocument>;
-#  publish-diagnostics(%text-document<uri>);
 
   return;
 }
 
 sub text-document-did-change(%params) {
-  # debug-log("\c[Bell]: text-document-did-change");
   my %text-document          = %params<textDocument>;
   my $uri                    = %text-document<uri>;
   %text-documents{$uri}<text> = %params<contentChanges>[0]<text>;
@@ -199,7 +185,6 @@ sub text-document-did-change(%params) {
 }
 
 sub text-document-did-close(%params) {
-  # debug-log("\c[Bell]: text-document-did-close");
   my %text-document = %params<textDocument>;
   %text-documents{%text-document<uri>}:delete;
 
