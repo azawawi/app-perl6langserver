@@ -13,7 +13,7 @@ a production environment.**
 ## Features:
 
 |Feature|Implements|Type|Description
-|-|-|
+|-|-|-|-|
 |Diagnostics|[PublishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)|Notification|Parse syntax check errors output from `perl6 -c`.|
 |Document outline|[Document Symbols Request](https://microsoft.github.io/language-server-protocol/specification#textDocument_documentSymbol)|Request|Parse AST output from `perl6 --target=parse`.|
 
