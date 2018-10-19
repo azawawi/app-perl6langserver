@@ -63,6 +63,12 @@ method run {
           when 'textDocument/didClose' {
             text-document-did-close($request<params>);
           }
+          when 'textDocument/documentSymbol' {
+            # When outline tree view is shown, it asks for symbols
+            my $result = on-document-symbol($request<params>);
+            debug-log($result.perl);
+            send-json-response($id, $result);
+          }
           when 'shutdown' {
             # Client requested to shutdown...
             send-json-response($id, Any);
@@ -110,6 +116,9 @@ sub initialize(%params) {
       # TextDocumentSyncKind.Full
       # Documents are synced by always sending the full content of the document.
       textDocumentSync => 1,
+
+      # Provide outline view support
+      documentSymbolProvider => True
     }
   )
 }
@@ -189,4 +198,94 @@ sub text-document-did-close(%params) {
   %text-documents{%text-document<uri>}:delete;
 
   return;
+}
+
+constant symbol-kind-file = 1;
+constant symbol-kind-module = 2;
+constant symbol-kind-namespace = 3;
+constant symbol-kind-package = 4;
+constant symbol-kind-class = 5;
+constant symbol-kind-method = 6;
+constant symbol-kind-property = 7;
+constant symbol-kind-field = 8;
+constant symbol-kind-constructor = 9;
+constant symbol-kind-enum = 10;
+constant symbol-kind-interface = 11;
+constant symbol-kind-function = 12;
+constant symbol-kind-variable = 13;
+constant symbol-kind-constant = 14;
+constant symbol-kind-string = 15;
+constant symbol-kind-number = 16;
+constant symbol-kind-boolean = 17;
+constant symbol-kind-array = 18;
+constant symbol-kind-object = 19;
+constant symbol-kind-key = 20;
+constant symbol-kind-null = 21;
+constant symbol-kind-enummember = 22;
+constant symbol-kind-struct = 23;
+constant symbol-kind-event = 24;
+constant symbol-kind-operator = 25;
+constant symbol-kind-typeparameter = 26;
+
+sub on-document-symbol(%params) {
+  my %text-document = %params<textDocument>;
+  my $uri = %text-document<uri>;
+
+  # result: DocumentSymbol[] | SymbolInformation[] | null defined as follows:
+  [
+      {
+        name => "SomeClass",
+	      kind => symbol-kind-class,
+	      location => {
+          uri => $uri,
+          range => {
+            start => {
+              line      => 1,
+              character => 0
+            },
+            end => {
+              line      => 1,
+              character => 0
+            },
+          },
+        },
+	       #containerName? => string;
+      },
+      {
+        name => "some-method",
+	      kind => symbol-kind-method,
+	      location => {
+          uri => $uri,
+          range => {
+            start => {
+              line      => 1,
+              character => 0
+            },
+            end => {
+              line      => 1,
+              character => 0
+            },
+          },
+        },
+	       containerName => "SomeClass";
+      },
+      {
+        name => "a-sub-routine",
+	      kind => symbol-kind-function,
+	      location => {
+          uri => $uri,
+          range => {
+            start => {
+              line      => 1,
+              character => 0
+            },
+            end => {
+              line      => 1,
+              character => 0
+            },
+          },
+        },
+	       #containerName? => string;
+      },
+  ]
 }

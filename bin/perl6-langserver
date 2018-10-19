@@ -2,6 +2,7 @@
 
 use v6;
 
+use lib "{$*PROGRAM.parent.parent}/lib";
 use App::Perl6LangServer;
 
 my $app = App::Perl6LangServer.new;
