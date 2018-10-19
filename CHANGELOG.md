@@ -1,6 +1,6 @@
 # Changelog for App::Perl6LangServer
 
-## 0.1.0
+## 0.1.1
 - :construction_worker: Fix Travis CI on macOS by installing rakudo-star.
 - :books: Update documentation.
 - :tada: Add experimental regex-based outline view support.
