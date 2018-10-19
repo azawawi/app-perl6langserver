@@ -2,20 +2,20 @@
 
  [![Build Status](https://travis-ci.org/azawawi/app-perl6langserver.svg?branch=master)](https://travis-ci.org/azawawi/app-perl6langserver) [![Build status](https://ci.appveyor.com/api/projects/status/github/azawawi/app-perl6langserver?svg=true)](https://ci.appveyor.com/project/azawawi/app-perl6langserver/branch/master)
 
-This is usually used with a language client (e.g.
+This is usually invoked from a language client (e.g.
 [ide-perl6](https://github.com/azawawi/ide-perl6)). This language server
-only supports at the moment `stdin` / `stdout` mode.
+only supports at the moment `stdin` / `stdout` mode. `stderr` is used to report debug information at the moment.
 
 This 
 **Note: This is currently experimental and API may change. Please DO NOT use in
 a production environment.**
 
-## Example
+## Features:
 
-```bash
-# To run the language server in stdin / stdout mode
-$ perl6-langserver
-```
+|Feature|Implements|Type|Description
+|-|-|
+|Diagnostics|[PublishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)|Notification|Parse syntax check errors output from `perl6 -c`.|
+|Document outline|[Document Symbols Request](https://microsoft.github.io/language-server-protocol/specification#textDocument_documentSymbol)|Request|Parse AST output from `perl6 --target=parse`.|
 
 ## Installation
 
