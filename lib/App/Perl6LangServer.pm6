@@ -231,61 +231,99 @@ sub on-document-symbol(%params) {
   my %text-document = %params<textDocument>;
   my $uri = %text-document<uri>;
 
-  # result: DocumentSymbol[] | SymbolInformation[] | null defined as follows:
-  [
-      {
-        name => "SomeClass",
-	      kind => symbol-kind-class,
-	      location => {
+  #TODO handle heredoc comments
+
+  # Remove line comments
+  my $source-code = %text-documents{$uri}<text> or return [];
+  $source-code    = $source-code.lines.map({
+    $_.subst(/ '#' (.+?) $ /, { '#' ~ (" " x $0.chars) })
+  }).join("\n");
+
+  my $to = 0;
+  my $line-number = 0;
+  my @line-ranges;
+  for $source-code.lines -> $line { 
+    my $length = $line.chars;
+    my $from = $to;
+    $to += $length;
+    @line-ranges.push: {
+      line-number => $line-number++,
+      from        => $from,
+      to          => $to
+    };
+  }
+  
+  sub to-line-number(Int $position) returns Int {
+    for @line-ranges -> $line-range {
+      if $position >= $line-range<from> && $position <= $line-range<to> {
+        return $line-range<line-number>;
+      }
+    }
+    return -1;
+  }
+  
+  my %to-symbol-kind = %(
+    'class'   => symbol-kind-class,
+    'grammar' => symbol-kind-class,
+    'module'  => symbol-kind-module,
+    'package' => symbol-kind-namespace,
+    'class'   => symbol-kind-class,
+    'sub'     => symbol-kind-function,
+    'method'  => symbol-kind-method,
+    'my'      => symbol-kind-variable,
+    'state'   => symbol-kind-variable,
+  );
+
+  # Symbol information
+  my @results;
+
+  sub add-results(@declarations) {
+    for @declarations -> $decl {
+      my $type            = ~$decl[0];
+      my Int $line-number = to-line-number($decl[0].from);
+      my Int $kind        =  %to-symbol-kind{$type};
+      my %record = %(
+        name => ~$decl[1],
+        kind => $kind,
+        location => {
           uri => $uri,
           range => {
             start => {
-              line      => 1,
-              character => 0
+              line      => $line-number,
+              character => 0, # $decl[0].from
             },
             end => {
-              line      => 1,
-              character => 0
+              line      => $line-number,
+              character => 0, # $decl[0].from
             },
           },
         },
-	       #containerName? => string;
-      },
-      {
-        name => "some-method",
-	      kind => symbol-kind-method,
-	      location => {
-          uri => $uri,
-          range => {
-            start => {
-              line      => 1,
-              character => 0
-            },
-            end => {
-              line      => 1,
-              character => 0
-            },
-          },
-        },
-	       containerName => "SomeClass";
-      },
-      {
-        name => "a-sub-routine",
-	      kind => symbol-kind-function,
-	      location => {
-          uri => $uri,
-          range => {
-            start => {
-              line      => 1,
-              character => 0
-            },
-            end => {
-              line      => 1,
-              character => 0
-            },
-          },
-        },
-	       #containerName? => string;
-      },
-  ]
+      );
+      @results.push(%record);
+    }
+  }
+  
+  # Find all package declarations
+  my @package-declarations = $source-code ~~ m:global/
+    # Declaration
+    ('class'| 'grammar'| 'module'| 'package'| 'role')
+    # Whitespace
+    \s+
+    # Identifier
+    (\w+ ('::' \w+))
+  /;
+  add-results(@package-declarations);
+  
+  my @routine-declarations = $source-code ~~ m:global/
+    # Declaration
+    ('sub'| 'method')
+    # Whitespace
+    \s+
+    # Identifier
+    (\w (\w | '-')*)
+  /;
+  add-results(@routine-declarations);
+
+  # SymbolInformation[]
+  return @results;
 }

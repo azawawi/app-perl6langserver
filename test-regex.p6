@@ -2,26 +2,19 @@ use v6;
 
 
 my $source-code = q:to/END/;
-class ClassA {
-
+class ClassA::B {
+# Some class FakeComment weird comment
   method A { }
-  sub B { }
-  sub foo {
-    my $var = 1;
-    say "Hello, World!";
-  }
-}
-class ClassB {
-  
-  class ClassC {
-    
-  };
-
-  method A1 { }
-  sub B1 { }
-  sub foo1 {  }
 }
 END
+
+# Remove line comments
+$source-code = $source-code.lines.map({
+  $_.subst(/ '#' (.+?) $ /, { '#' ~ (" " x $0.chars) })
+}).join("\n");
+
+say $source-code;
+
 
 my $to = 0;
 my $line-number = 0;
@@ -53,7 +46,7 @@ my @package-declarations = $source-code ~~ m:global/
   # Whitespace
   \s+
   # Identifier
-  (\w+)
+  (\w+ ('::' \w+))
 /;
 for @package-declarations -> $decl {
   my %record = %(
