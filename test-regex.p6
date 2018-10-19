@@ -48,10 +48,11 @@ sub to-line-number(Int $position) {
 
 # Find all package declarations
 my @package-declarations = $source-code ~~ m:global/
-  # Package declaration
+  # Declaration
   ('class'| 'grammar'| 'module'| 'package'| 'role')
+  # Whitespace
   \s+
-  # Package identifier
+  # Identifier
   (\w+)
 /;
 for @package-declarations -> $decl {
@@ -65,15 +66,34 @@ for @package-declarations -> $decl {
   say %record;
 }
 
-# my $var = 1;
 my @variable-declarations = $source-code ~~ m:global/
-  # Package declaration
+  # Declaration
   ('my'| 'state')
+  # Whitespace
   \s+
-  # Package identifier
-  (\w+)
+  # Identifier
+  (( '$' | '@' | '%') \w+)
 /;
 for @variable-declarations -> $decl {
+  my %record = %(
+    from        => $decl[0].from,
+    to          => $decl[0].pos,
+    line-number => to-line-number($decl[0].from) + 1,
+    type        => ~$decl[0],
+    name        => ~$decl[1],
+  );
+  say %record;
+}
+
+my @routine-declarations = $source-code ~~ m:global/
+  # Declaration
+  ('sub'| 'method')
+  # Whitespace
+  \s+
+  # Identifier
+  (\w+)
+/;
+for @routine-declarations -> $decl {
   my %record = %(
     from        => $decl[0].from,
     to          => $decl[0].pos,
