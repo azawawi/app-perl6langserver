@@ -1,14 +1,15 @@
 # Changelog for App::Perl6LangServer
 
-## 0.0.3 ** UNRELEASED **
-- Fix Travis CI on macOS by installing rakudo-star.
+## 0.1.0
+- :construction_worker: Fix Travis CI on macOS by installing rakudo-star.
+- :books: Update documentation.
+- :tada: Add experimental regex-based outline view support.
 
 ## 0.0.2
-- Fix `00-compile.t` copy & paste errors.
-- Remove dead debugging code.
-- Add Travis / AppVeyor CI.
-- Fix Travis / AppVeyor CI badges in README.
+- :bug: Fix `00-compile.t` copy & paste errors.
+- :hammer: Remove dead debugging code.
+- :construction_worker: Add Travis / AppVeyor CI with README badges
 
 ## 0.0.1 - First release
-- Refactor out this project from [`IDE-Perl6`](
+- :tada: :art: Refactor out this project from [`IDE-Perl6`](
 https://github.com/azawawi/ide-perl6).
