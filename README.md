@@ -15,7 +15,7 @@ a production environment.**
 |Feature|Implements|Type|Status|Description
 |-|-|-|-|-|
 |Diagnostics|[PublishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)|Notification|:heavy_check_mark:|Parse syntax check errors output from `perl6 -c`.|
-|Document outline|[Document Symbols](https://microsoft.github.io/language-server-protocol/specification#textDocument_documentSymbol)|Request|:construction:|Parse AST output from `perl6 --target=parse`.|
+|Document outline|[Document Symbols](https://microsoft.github.io/language-server-protocol/specification#textDocument_documentSymbol)|Request|:construction:|Experimental regex-based parser.|
 
 ## Installation
 
