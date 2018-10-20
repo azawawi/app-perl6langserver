@@ -3,11 +3,16 @@ use v6;
 
 unit class App::Perl6LangServer;
 
+# Necessary evil to evaluate p6ddoc index data (Perl 6 data structure)
+use MONKEY-SEE-NO-EVAL;
+
 use File::Temp;
 use JSON::Fast;
 
-#TODO refactor bin/perl6-langserver into here.
+# Cache p6doc index.data (Hash of help topics strings)
+my %help-index;
 
+# Text documents
 my %text-documents;
 
 method run {
@@ -343,20 +348,35 @@ sub on-text-document-hover(%params) {
 
   my $source-code = %text-documents{$uri}<text> or return [];
 
-  my $hover-contents = '';
+  my $hover-text  = '';
   my $line-number = 0;
+  my $start-pos  = 0;
   for $source-code.lines -> $line {
     if $line-number == %position<line> {
-      $hover-contents = qq:to/HOVER/;
-      {$line-number + 1} : ```perl6
-      $line
-      ```
-      HOVER
+      my @chars  = $line.comb;
+      my $buffer = '';
+      my $pos    = %position<character>;
+      for 0..@chars.elems - 1 -> $i {
+        my $ch = @chars[$i];
+        if $ch eq any(' ', '.', '(', ')', '<', '>', ';', ',' , '{', '}', '[', ']', '+') {
+          last if $i >= $pos;
+          $start-pos = $i;
+          $buffer    = '';
+        } else {
+          $start-pos = $i if $buffer eq '';
+          $buffer ~= $ch;
+        }
+      }
+      $hover-text = $buffer.trim;
       last
     }
-
     $line-number++;
   }
+
+  my $hover-contents = help-search($hover-text);
+  #my $hover-contents = "Help for $hover-text, {%position<character>}, $start-pos";
+
+  #TODO or "Unable to find help for '$hover-text'";
 
   #TODO add definition for variables hover support
   #TODO add p6doc help keyword hover support
@@ -364,6 +384,73 @@ sub on-text-document-hover(%params) {
 
   {
     # The hover content
-    contents => $hover-contents
+    contents => $hover-contents,
+    range => {
+      start => {
+        line      => %position<line>,
+        character => $start-pos
+      },
+      end   => {
+        line      => %position<line>,
+        character => $start-pos + $hover-text.chars
+      }
+    }
   };
+}
+
+sub help-search(Str $pattern is copy) {
+
+  debug-log("help-search('$pattern')");
+
+	# Trim the pattern and make sure we dont fail on undefined
+	$pattern = $pattern // '';
+	$pattern = $pattern.trim;
+
+	unless %help-index {
+    #TODO handle windows
+		my $index-file = qx{p6doc path-to-index}.chomp;
+		unless $index-file.path ~~ :f
+		{
+			debug-log("Building index.data... Please wait");
+
+			# run p6doc-index build to build the index.data file
+			my Str $dummy = qqx{p6doc build};
+		}
+
+		if $index-file.path ~~ :f
+		{
+			debug-log("Loading index.data... Please wait");
+			%help-index = EVAL $index-file.IO.slurp;
+		}
+		else
+		{
+			debug-log("Cannot find $index-file");
+      return;
+		}
+	}
+
+	my @results;
+	for %help-index.keys -> $topic {
+		@results.push({
+			"name"    => $topic,
+			"matches" => %help-index{$topic}.unique(:as(&lc))
+		}) if $topic ~~ m:i/"$pattern"/;
+	}
+
+	@results = @results.sort(-> $a, $b { uc($a) leg uc($b) });
+  
+  debug-log(@results);
+
+	my $contents = '';
+	for @results -> $result {
+		for @($result<matches>) -> $match {
+			my $name = $match[1].subst(/^ ( 'sub'| 'routine' | 'method' ) /, "").trim;
+			my $keyword = $match[0] ~ $name;
+			my $content = qqx{p6doc -n $keyword}.chomp;
+			$contents ~= $content ~ "\n---\n";
+      last;
+		}
+	};
+	
+	$contents;
 }
