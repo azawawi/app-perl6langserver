@@ -65,8 +65,11 @@ method run {
           }
           when 'textDocument/documentSymbol' {
             # When outline tree view is shown, it asks for symbols
-            my $result = on-document-symbol($request<params>);
-            debug-log($result.perl);
+            my $result = on-text-document-symbol($request<params>);
+            send-json-response($id, $result);
+          }
+          when 'textDocument/hover' {
+            my $result = on-text-document-hover($request<params>);
             send-json-response($id, $result);
           }
           when 'shutdown' {
@@ -118,7 +121,10 @@ sub initialize(%params) {
       textDocumentSync => 1,
 
       # Provide outline view support
-      documentSymbolProvider => True
+      documentSymbolProvider => True,
+
+      # Provide hover support
+      hoverProvider => True
     }
   )
 }
@@ -227,7 +233,8 @@ constant symbol-kind-event = 24;
 constant symbol-kind-operator = 25;
 constant symbol-kind-typeparameter = 26;
 
-sub on-document-symbol(%params) {
+# Called when the client sends a textDocument/documentSymbol request
+sub on-text-document-symbol(%params) {
   my %text-document = %params<textDocument>;
   my $uri = %text-document<uri>;
 
@@ -326,4 +333,37 @@ sub on-document-symbol(%params) {
 
   # SymbolInformation[]
   return @results;
+}
+
+# Called when client gets a 'textDocument/hover' request.
+sub on-text-document-hover(%params) {
+  my %text-document = %params<textDocument>;
+  my $uri = %text-document<uri>;
+  my %position = %params<position>;
+
+  my $source-code = %text-documents{$uri}<text> or return [];
+
+  my $hover-contents = '';
+  my $line-number = 0;
+  for $source-code.lines -> $line {
+    if $line-number == %position<line> {
+      $hover-contents = qq:to/HOVER/;
+      {$line-number + 1} : ```perl6
+      $line
+      ```
+      HOVER
+      last
+    }
+
+    $line-number++;
+  }
+
+  #TODO add definition for variables hover support
+  #TODO add p6doc help keyword hover support
+  #TODO handle hover range
+
+  {
+    # The hover content
+    contents => $hover-contents
+  };
 }
