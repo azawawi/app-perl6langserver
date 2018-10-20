@@ -6,7 +6,9 @@
   "description"   : "Perl 6 Language Server.",
   "depends"       : [
     "File::Temp",
-    "JSON::Fast"
+    "JSON::Fast",
+    "IO::Socket::SSL",
+    "p6doc"
   ],
   "test-depends"  : [
     "Test"
