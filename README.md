@@ -16,6 +16,7 @@ a production environment.**
 |-|-|-|-|-|
 |Diagnostics|[PublishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)|Notification|:heavy_check_mark:|Parse syntax check errors output from `perl6 -c`.|
 |Document outline|[Document Symbols](https://microsoft.github.io/language-server-protocol/specification#textDocument_documentSymbol)|Request|:construction:|Experimental regex-based parser.|
+|Hover|[Hover](https://microsoft.github.io/language-server-protocol/specification#textDocument_hover)|Request|:construction:|Experimental p6doc support / find declaration.|
 
 ## Installation
 
