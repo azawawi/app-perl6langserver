@@ -1,5 +1,8 @@
 # Changelog for App::Perl6LangServer
 
+## 0.1.2
+- :bug: Fix dependency meta data.
+
 ## 0.1.1
 - :construction_worker: Fix Travis CI on macOS by installing rakudo-star.
 - :books: Update documentation.

@@ -1,7 +1,7 @@
 {
   "name"          : "App::Perl6LangServer",
   "license"       : "MIT",
-  "version"       : "0.1.1",
+  "version"       : "0.1.2",
   "perl"          : "6.c",
   "description"   : "Perl 6 Language Server.",
   "depends"       : [
