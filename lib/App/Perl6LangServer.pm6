@@ -7,7 +7,7 @@ unit class App::Perl6LangServer;
 use MONKEY-SEE-NO-EVAL;
 
 use File::Temp;
-use JSON::Fast;
+use JSON::Tiny;
 
 # Cache p6doc index.data (Hash of help topics strings)
 my %help-index;
@@ -100,9 +100,9 @@ sub send-json-response($id, $result) {
     id       => $id,
     result   => $result,
   );
-  my $json-response = to-json(%response, :!pretty);
+  my $json-response = to-json(%response);
   my $content-length = $json-response.chars;
-  my $response = "Content-Length: $content-length\r\n\r\n$json-response";
+  my $response = "Content-Length: $content-length\r\n\r\n" ~ $json-response;
   print($response);
 }
 
@@ -112,13 +112,32 @@ sub send-json-request($method, %params) {
     'method' => $method,
     params   => %params,
   );
-  my $json-request = to-json(%request, :!pretty);
+  my $json-request = to-json(%request);
   my $content-length = $json-request.chars;
-  my $request = "Content-Length: $content-length\r\n\r\n$json-request";
+  my $request = "Content-Length: $content-length\r\n\r\n" ~ $json-request;
   print($request);
 }
 
 sub initialize(%params) {
+
+  #TODO handle windows
+	my $index-file = qx{p6doc path-to-index}.chomp;
+	unless $index-file.path ~~ :f {
+		# run p6doc-index build to build the index.data file
+		debug-log("Building index.data... Please wait");
+		my $dummy = qqx{p6doc build};
+    debug-log("Built index.data... Thanks for waiting");
+	}
+
+	if $index-file.path ~~ :f {
+		debug-log("Loading index.data... Please wait");
+		%help-index = EVAL $index-file.IO.slurp;
+    debug-log("Loaded index.data... Thanks for waiting");
+	}
+	else {
+		debug-log("Cannot find $index-file");
+	}
+
   %(
     capabilities => {
       # TextDocumentSyncKind.Full
@@ -358,7 +377,7 @@ sub on-text-document-hover(%params) {
       my $pos    = %position<character>;
       for 0..@chars.elems - 1 -> $i {
         my $ch = @chars[$i];
-        if $ch eq any(' ', '.', '(', ')', '<', '>', ';', ',' , '{', '}', '[', ']', '+') {
+        if $ch eq any(' ', '.', '(', ')', '<', '>', ';', ',' , '{', '}', '[', ']', '+', ':') {
           last if $i >= $pos;
           $start-pos = $i;
           $buffer    = '';
@@ -374,13 +393,9 @@ sub on-text-document-hover(%params) {
   }
 
   my $hover-contents = help-search($hover-text);
-  #my $hover-contents = "Help for $hover-text, {%position<character>}, $start-pos";
-
-  #TODO or "Unable to find help for '$hover-text'";
+  $hover-contents = "Unable to find help for '$hover-text'" if $hover-contents eq '';
 
   #TODO add definition for variables hover support
-  #TODO add p6doc help keyword hover support
-  #TODO handle hover range
 
   {
     # The hover content
@@ -401,56 +416,53 @@ sub on-text-document-hover(%params) {
 sub help-search(Str $pattern is copy) {
 
   debug-log("help-search('$pattern')");
+  return '' unless %help-index;
 
 	# Trim the pattern and make sure we dont fail on undefined
 	$pattern = $pattern // '';
 	$pattern = $pattern.trim;
 
-	unless %help-index {
-    #TODO handle windows
-		my $index-file = qx{p6doc path-to-index}.chomp;
-		unless $index-file.path ~~ :f
-		{
-			debug-log("Building index.data... Please wait");
-
-			# run p6doc-index build to build the index.data file
-			my Str $dummy = qqx{p6doc build};
-		}
-
-		if $index-file.path ~~ :f
-		{
-			debug-log("Loading index.data... Please wait");
-			%help-index = EVAL $index-file.IO.slurp;
-		}
-		else
-		{
-			debug-log("Cannot find $index-file");
-      return;
-		}
-	}
-
 	my @results;
+  constant MAX-SIZE = 5;
 	for %help-index.keys -> $topic {
-		@results.push({
-			"name"    => $topic,
-			"matches" => %help-index{$topic}.unique(:as(&lc))
-		}) if $topic ~~ m:i/"$pattern"/;
+
+		if $topic ~~ m:i/"$pattern"/ {
+      @results.push({
+  			"name"    => $topic,
+  			"matches" => %help-index{$topic}.unique(:as(&lc))
+  		});
+
+      last if @results.elems >= MAX-SIZE;
+    }
+
 	}
 
 	@results = @results.sort(-> $a, $b { uc($a) leg uc($b) });
-  
-  debug-log(@results);
 
-	my $contents = '';
-	for @results -> $result {
+	my @contents;
+	LOOP: for @results -> $result {
+
 		for @($result<matches>) -> $match {
+      # Compose help keyword from matches
 			my $name = $match[1].subst(/^ ( 'sub'| 'routine' | 'method' ) /, "").trim;
 			my $keyword = $match[0] ~ $name;
-			my $content = qqx{p6doc -n $keyword}.chomp;
-			$contents ~= $content ~ "\n---\n";
-      last;
+
+      my $proc      = run 'p6doc', '-n', $keyword, :out;
+      my $content   = $proc.out.slurp(:close).chomp;
+      my $exit-code = $proc.exitcode;
+      if $exit-code == 0 {
+        # On success, add p6doc output
+        @contents.push($content);
+
+        #TODO how many p6doc choices to show the user
+        last LOOP
+      } else {
+        debug-log("p6doc failed with exit code: {$exit-code}")
+      }
+
 		}
-	};
-	
-	$contents;
+
+	}
+
+	@contents.join("\n---\n");
 }
