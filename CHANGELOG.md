@@ -1,5 +1,8 @@
 # Changelog for App::Perl6LangServer
 
+## 0.2.0
+- :tada: Add experimental hover support.
+
 ## 0.1.2
 - :bug: Fix dependency meta data.
 - :white_check_mark: Add author tests for meta data.
