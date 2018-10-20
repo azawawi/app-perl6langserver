@@ -2,6 +2,7 @@
 
 ## 0.2.0
 - :tada: Add experimental hover support.
+- :arrow_up: Switch to JSON::Tiny for slower but more correct JSON output.
 
 ## 0.1.2
 - :bug: Fix dependency meta data.
