@@ -2,6 +2,7 @@
 
 ## 0.1.2
 - :bug: Fix dependency meta data.
+- :white_check_mark: Add author tests for meta data.
 
 ## 0.1.1
 - :construction_worker: Fix Travis CI on macOS by installing rakudo-star.
