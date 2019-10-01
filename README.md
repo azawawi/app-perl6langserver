@@ -6,7 +6,7 @@ This is usually invoked from a language client (e.g.
 [ide-perl6](https://github.com/azawawi/ide-perl6)). This language server
 only supports at the moment `stdin` / `stdout` mode. `stderr` is used to report debug information at the moment.
 
-This 
+This
 **Note: This is currently experimental and API may change. Please DO NOT use in
 a production environment.**
 
@@ -14,9 +14,9 @@ a production environment.**
 
 |Feature|Implements|Type|Status|Description
 |-|-|-|-|-|
-|Diagnostics|[PublishDiagnostics](https://microsoft.github.io/language-server-protocol/specification#textDocument_publishDiagnostics)|Notification|:heavy_check_mark:|Parse syntax check errors output from `perl6 -c`.|
-|Document outline|[Document Symbols](https://microsoft.github.io/language-server-protocol/specification#textDocument_documentSymbol)|Request|:construction:|Experimental regex-based parser.|
-|Hover|[Hover](https://microsoft.github.io/language-server-protocol/specification#textDocument_hover)|Request|:construction:|Experimental p6doc support / find declaration.|
+|Diagnostics|[PublishDiagnostics](https://microsoft.github.io/language-server-protocol/specifications/specification-3-14/#textDocument_publishDiagnostics)|Notification|:heavy_check_mark:|Parse syntax check errors output from `perl6 -c`.|
+|Document outline|[Document Symbols](https://microsoft.github.io/language-server-protocol/specifications/specification-3-14/#textDocument_documentSymbol)|Request|:construction:|Experimental regex-based parser.|
+|Hover|[Hover](https://microsoft.github.io/language-server-protocol/specifications/specification-3-14/#textDocument_hover)|Request|:construction:|Experimental p6doc support / find declaration.|
 
 ## Installation
 
@@ -43,7 +43,3 @@ $ AUTHOR_TESTING=1 prove -e "perl6 -Ilib"
 ## Author
 
 Ahmad M. Zawawi, [azawawi](https://github.com/azawawi/) on #perl6.
-
-## License
-
-MIT License
